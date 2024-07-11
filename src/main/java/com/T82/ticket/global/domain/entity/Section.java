@@ -1,4 +1,4 @@
-package com.T82.ticket.global.entity;
+package com.T82.ticket.global.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -34,4 +34,5 @@ public class Section {
 
     @OneToMany(mappedBy = "section")
     private List<Seat> seats = new ArrayList<>();
+
 }
