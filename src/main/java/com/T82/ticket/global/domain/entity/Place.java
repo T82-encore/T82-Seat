@@ -1,4 +1,4 @@
-package com.T82.ticket.global.entity;
+package com.T82.ticket.global.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,4 +25,5 @@ public class Place {
     private String address;
     @OneToMany(mappedBy = "place")
     private List<Section> sections = new ArrayList<>();
+
 }
