@@ -2,6 +2,7 @@ package com.T82.ticket.service;
 
 import com.T82.ticket.dto.response.RestSeatResponseDto;
 import com.T82.ticket.global.domain.entity.Section;
+import com.T82.ticket.global.domain.exception.NotFoundEventIdException;
 import com.T82.ticket.global.domain.repository.SectionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ public class SectionServiceImpl implements SectionService{
     @Override
     public List<RestSeatResponseDto> getAvailableSeatCountPerSection(Long eventId) {
         List<Section> allByEventId = sectionRepository.findAllByEventId(eventId);
+        if(allByEventId.isEmpty()) throw new NotFoundEventIdException();
         return allByEventId.stream().map(RestSeatResponseDto::from).toList();
     }
 }
