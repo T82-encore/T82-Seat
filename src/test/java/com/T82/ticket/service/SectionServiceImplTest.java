@@ -3,6 +3,7 @@ package com.T82.ticket.service;
 import com.T82.ticket.dto.response.RestSeatResponseDto;
 import com.T82.ticket.global.domain.entity.Place;
 import com.T82.ticket.global.domain.entity.Section;
+import com.T82.ticket.global.domain.exception.NotFoundEventIdException;
 import com.T82.ticket.global.domain.repository.PlaceRepository;
 import com.T82.ticket.global.domain.repository.SectionRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,5 +63,15 @@ class SectionServiceImplTest {
                 .anyMatch(dto -> dto.name().equals("이벤트이름2") && dto.restSeat().equals(150L)));
         assertTrue(availableSeatCountPerSection.stream()
                 .anyMatch(dto -> dto.name().equals("이벤트이름3") && dto.restSeat().equals(50L)));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 이벤트ID일때")
+    @Transactional
+    void notFoundEventIdTest() {
+//    when
+        NotFoundEventIdException notFoundEventIdException = assertThrows(NotFoundEventIdException.class,()-> sectionService.getAvailableSeatCountPerSection(100000L));
+        // then
+        assertEquals("Not Fount Event",notFoundEventIdException.getMessage());
     }
 }
