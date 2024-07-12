@@ -3,11 +3,12 @@ package com.T82.ticket.service;
 import com.T82.ticket.dto.response.RestSeatResponseDto;
 import com.T82.ticket.global.domain.entity.Place;
 import com.T82.ticket.global.domain.entity.Section;
-import com.T82.ticket.global.domain.exception.NotFoundEventIdException;
+import com.T82.ticket.global.domain.exception.EventNotFoundException;
 import com.T82.ticket.global.domain.repository.PlaceRepository;
 import com.T82.ticket.global.domain.repository.SectionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,31 +48,32 @@ class SectionServiceImplTest {
         sectionRepository.saveAndFlush(section3);
     }
 
-    @Test
-    @DisplayName("이벤트ID로 이벤트의 모든 구역들의 남은 좌석 가져오기")
+    @Nested
     @Transactional
-    void getAvailableSeatCountPerSectionTest() {
+    class 이벤트하나의_모든_구역의_남은_좌석수_가져오기{
+        @Test
+        void 이벤트ID로_이벤트의_모든_구역들의_남은_좌석_가져오기() {
 //    when
-        List<RestSeatResponseDto> availableSeatCountPerSection = sectionService.getAvailableSeatCountPerSection(1L);
+            List<RestSeatResponseDto> availableSeatCountPerSection = sectionService.getAvailableSeatCountPerSection(1L);
 //    then
-        assertNotNull(availableSeatCountPerSection);
-        assertEquals(3, availableSeatCountPerSection.size());
+            assertNotNull(availableSeatCountPerSection);
+            assertEquals(3, availableSeatCountPerSection.size());
 
-        assertTrue(availableSeatCountPerSection.stream()
-                .anyMatch(dto -> dto.name().equals("이벤트이름1") && dto.restSeat().equals(80L)));
-        assertTrue(availableSeatCountPerSection.stream()
-                .anyMatch(dto -> dto.name().equals("이벤트이름2") && dto.restSeat().equals(150L)));
-        assertTrue(availableSeatCountPerSection.stream()
-                .anyMatch(dto -> dto.name().equals("이벤트이름3") && dto.restSeat().equals(50L)));
+            assertTrue(availableSeatCountPerSection.stream()
+                    .anyMatch(dto -> dto.name().equals("이벤트이름1") && dto.restSeat().equals(80L)));
+            assertTrue(availableSeatCountPerSection.stream()
+                    .anyMatch(dto -> dto.name().equals("이벤트이름2") && dto.restSeat().equals(150L)));
+            assertTrue(availableSeatCountPerSection.stream()
+                    .anyMatch(dto -> dto.name().equals("이벤트이름3") && dto.restSeat().equals(50L)));
+        }
+
+        @Test
+        void 존재하지_않는_이벤트ID일때() {
+            //    when
+            EventNotFoundException notFoundEventException = assertThrows(EventNotFoundException.class,()-> sectionService.getAvailableSeatCountPerSection(100000L));
+            // then
+            assertEquals("Not Fount Event",notFoundEventException.getMessage());
+        }
     }
 
-    @Test
-    @DisplayName("존재하지 않는 이벤트ID일때")
-    @Transactional
-    void notFoundEventIdTest() {
-//    when
-        NotFoundEventIdException notFoundEventIdException = assertThrows(NotFoundEventIdException.class,()-> sectionService.getAvailableSeatCountPerSection(100000L));
-        // then
-        assertEquals("Not Fount Event",notFoundEventIdException.getMessage());
-    }
 }
