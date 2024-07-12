@@ -1,10 +1,7 @@
 package com.T82.ticket.global.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
@@ -20,9 +17,9 @@ public class Seat {
     private Long rowNum;
     @Column(name = "COLUMN_NUM")
     private Long columnNum;
-    @Column(name = "IS_CHOICING")
+    @Column(name = "IS_CHOICING") @Setter
     private Boolean isChoicing;
-    @Column(name = "IS_BOOKED")
+    @Column(name = "IS_BOOKED") @Setter
     private Boolean isBooked;
     @ManyToOne
     @JoinColumn(name = "SECTION_ID")
