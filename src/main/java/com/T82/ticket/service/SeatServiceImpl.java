@@ -4,6 +4,7 @@ import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
 import com.T82.ticket.global.domain.entity.Seat;
 import com.T82.ticket.global.domain.exception.SectionNotFoundException;
 import com.T82.ticket.global.domain.repository.SeatRepository;
+import com.T82.ticket.global.domain.repository.SectionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,11 +15,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class SeatServiceImpl implements SeatService{
-    private final SeatRepository seatRepository;
+    private final SectionRepository sectionRepository;
     @Override
-    public List<AvailableSeatsResponseDto> getAvailableSeats(Long sectionId) {
-        List<Seat> allBySectionId = seatRepository.findAllBySectionId(sectionId);
-        if(allBySectionId.isEmpty()) throw new SectionNotFoundException();
-        return allBySectionId.stream().map(AvailableSeatsResponseDto::from).toList();
+    public List<AvailableSeatsResponseDto> getAvailableSeats(Long eventId) {
+        List<Seat> seats = sectionRepository.findAllSeatsByEventId(eventId);
+        if(seats.isEmpty()) throw new SectionNotFoundException();
+        return seats.stream().map(AvailableSeatsResponseDto::from).toList();
     }
 }
