@@ -18,8 +18,8 @@ import java.util.List;
 public class SeatController {
     private final SeatService seatService;
 
-    @GetMapping("/section/{sectionId}")
-    public List<AvailableSeatsResponseDto> getAvailableSeats(@PathVariable(name = "sectionId") Long sectionId){
-        return seatService.getAvailableSeats(sectionId);
+    @GetMapping("/events/{eventId}")
+    public List<AvailableSeatsResponseDto> getAvailableSeats(@PathVariable(name = "eventId") Long eventId){
+        return seatService.getAvailableSeats(eventId);
     }
 }
