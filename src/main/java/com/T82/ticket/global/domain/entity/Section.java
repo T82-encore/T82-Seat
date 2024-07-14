@@ -28,7 +28,7 @@ public class Section {
     @Column(name = "PRICE")
     private Long price;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PLACE_ID")
     private Place place;
 

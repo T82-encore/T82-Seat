@@ -1,6 +1,7 @@
 package com.T82.ticket.controller;
 
 import com.T82.ticket.global.domain.exception.EventNotFoundException;
+import com.T82.ticket.global.domain.exception.SeatNotFoundException;
 import com.T82.ticket.global.domain.exception.SectionNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,6 +19,12 @@ public class ExceptionController {
     @ExceptionHandler(SectionNotFoundException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public String sectionNotFoundExceptionHandler(SectionNotFoundException e){
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(SeatNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String seatNotFoundExceptionHandler(SeatNotFoundException e){
         return e.getMessage();
     }
 
