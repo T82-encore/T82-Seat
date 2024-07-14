@@ -21,7 +21,7 @@ public class Seat {
     private Boolean isChoicing;
     @Column(name = "IS_BOOKED") @Setter
     private Boolean isBooked;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "SECTION_ID")
     private Section section;
 

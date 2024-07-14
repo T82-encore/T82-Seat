@@ -1,10 +1,12 @@
 package com.T82.ticket.service;
 
+import com.T82.ticket.dto.request.ChoiceSeatsRequestDto;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
-import com.T82.ticket.dto.response.RestSeatResponseDto;
 import com.T82.ticket.global.domain.entity.Place;
 import com.T82.ticket.global.domain.entity.Seat;
 import com.T82.ticket.global.domain.entity.Section;
+import com.T82.ticket.global.domain.exception.EventNotFoundException;
+import com.T82.ticket.global.domain.exception.SeatNotFoundException;
 import com.T82.ticket.global.domain.repository.PlaceRepository;
 import com.T82.ticket.global.domain.repository.SeatRepository;
 import com.T82.ticket.global.domain.repository.SectionRepository;
@@ -41,6 +43,7 @@ class SeatServiceImplTest {
         placeRepository.saveAndFlush(place);
         section = new Section(null, "구역이름1", 25L, 21L, 10000L, place, new ArrayList<>());
         sectionRepository.saveAndFlush(section);
+
 
         evnetId = section.getPlace().getEventId();
 
@@ -81,5 +84,23 @@ class SeatServiceImplTest {
 //    then
             assertEquals(22,availableSeats.size());
         }
+    }
+
+    @Nested
+    @Transactional
+    class 좌석을_선택하면_해당_좌석을_선택하지_못하도록하는_기능 {
+        @Test
+        @Transactional
+        void seatId가_존재하지않는_좌석일때_예외테스트() {
+//    given
+            ChoiceSeatsRequestDto test1 = new ChoiceSeatsRequestDto(100000L);
+            List<ChoiceSeatsRequestDto> req = new ArrayList<>();
+            req.add(test1);
+//    when
+            SeatNotFoundException seatNotFoundException = assertThrows(SeatNotFoundException.class,()-> seatService.choiceSeats(req));
+//    then
+            assertEquals("Not Fount Seat",seatNotFoundException.getMessage());
+        }
+
     }
 }
