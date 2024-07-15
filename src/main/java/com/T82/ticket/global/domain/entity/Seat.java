@@ -1,5 +1,6 @@
 package com.T82.ticket.global.domain.entity;
 
+import com.T82.ticket.dto.request.SectionInitRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,9 +15,9 @@ public class Seat {
     @Column(name = "SEAT_ID")
     private Long seatId;
     @Column(name = "ROW_NUM")
-    private Long rowNum;
+    private Integer rowNum;
     @Column(name = "COLUMN_NUM")
-    private Long columnNum;
+    private Integer colNum;
     @Column(name = "IS_CHOICING") @Setter
     private Boolean isChoicing;
     @Column(name = "IS_BOOKED") @Setter
@@ -25,4 +26,14 @@ public class Seat {
     @JoinColumn(name = "SECTION_ID")
     private Section section;
 
+    public static Seat toEntity(int row, int col, Section section){
+        return Seat.builder()
+                .seatId(null)
+                .rowNum(row)
+                .colNum(col)
+                .isChoicing(false)
+                .isBooked(false)
+                .section(section)
+                .build();
+    }
 }
