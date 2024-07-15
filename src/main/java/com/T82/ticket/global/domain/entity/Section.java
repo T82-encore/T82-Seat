@@ -1,5 +1,6 @@
 package com.T82.ticket.global.domain.entity;
 
+import com.T82.ticket.dto.request.SectionInitRequestDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,18 +22,37 @@ public class Section {
     private Long sectionId;
     @Column(name = "NAME")
     private String name;
-    @Column(name = "TOTAL_SEAT")
-    private Long totalSeat;
     @Column(name = "REST_SEAT")
-    private Long restSeat;
+    private Integer restSeat;
     @Column(name = "PRICE")
-    private Long price;
+    private Integer price;
+    @Column(name = "START_ROW")
+    private Integer startRow;
+    @Column(name = "START_COL")
+    private Integer startCol;
+    @Column(name = "ROW_NUM")
+    private Integer rowNum;
+    @Column(name = "COL_NUM")
+    private Integer colNum;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PLACE_ID")
     private Place place;
 
-    @OneToMany(mappedBy = "section")
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Seat> seats = new ArrayList<>();
 
+    public static Section toEntity(SectionInitRequestDto req, Place place){
+        return Section.builder()
+                .sectionId(null)
+                .name(req.sectionName())
+                .startRow(req.startRow())
+                .startCol(req.startCol())
+                .rowNum(req.rowNum())
+                .colNum(req.colNum())
+                .price(req.price())
+                .restSeat(req.sectionTotalSeat())
+                .place(place)
+                .build();
+    }
 }
