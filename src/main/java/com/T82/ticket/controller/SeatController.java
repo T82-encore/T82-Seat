@@ -16,7 +16,7 @@ import java.util.List;
 public class SeatController {
     private final SeatService seatService;
 
-    @GetMapping("/events/{eventId}")
+    @GetMapping("/events/{eventId}/seats")
     public List<AvailableSeatsResponseDto> getAvailableSeats(@PathVariable(name = "eventId") Long eventId){
         return seatService.getAvailableSeats(eventId);
     }
