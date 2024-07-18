@@ -1,12 +1,13 @@
-package com.T82.ticket.service;
+package com.T82.ticket.service.impl;
 
-import com.T82.ticket.dto.request.ChoiceSeatsRequestDto;
+import com.T82.ticket.config.util.TokenInfo;
+import com.T82.ticket.dto.request.ChoiceSeatsRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
 import com.T82.ticket.global.domain.entity.Place;
 import com.T82.ticket.global.domain.entity.Seat;
 import com.T82.ticket.global.domain.entity.Section;
-import com.T82.ticket.global.domain.exception.EventNotFoundException;
 import com.T82.ticket.global.domain.exception.SeatNotFoundException;
+import com.T82.ticket.global.domain.repository.ChoiceSeatRepository;
 import com.T82.ticket.global.domain.repository.PlaceRepository;
 import com.T82.ticket.global.domain.repository.SeatRepository;
 import com.T82.ticket.global.domain.repository.SectionRepository;
@@ -21,7 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -35,13 +37,20 @@ class SeatServiceImplTest {
     PlaceRepository placeRepository;
     @Autowired
     SeatServiceImpl seatService;
+    @Autowired
+    ChoiceSeatRepository choiceSeatRepository;
+
+
+    private TokenInfo tokenInfo;
     private Section section;
+
+    private Seat seat;
     private Long evnetId;
     @BeforeEach
     void setUp() {
-        Place place = new Place(1L, "장소1", "주소1", new ArrayList<>());
+        Place place = new Place(1L, "장소1", "주소1",50 ,50,new ArrayList<>());
         placeRepository.saveAndFlush(place);
-        section = new Section(null, "구역이름1", 25L, 21L, 10000L, place, new ArrayList<>());
+        section = new Section(null, "구역이름1", 21, 10000,0, 0 ,1,1,place, new ArrayList<>());
         sectionRepository.saveAndFlush(section);
 
 
@@ -49,7 +58,7 @@ class SeatServiceImplTest {
 
         for (int i = 1; i <= 5; i++) {
             for (int j = 1; j <= 5; j++) {
-                Seat seat = new Seat(null, (long) i, (long) j,false,false,section);
+                Seat seat = new Seat(null,  i,  j,false,false,section);
                 seatRepository.saveAndFlush(seat);
             }
         }
@@ -93,14 +102,13 @@ class SeatServiceImplTest {
         @Transactional
         void seatId가_존재하지않는_좌석일때_예외테스트() {
 //    given
-            ChoiceSeatsRequestDto test1 = new ChoiceSeatsRequestDto(100000L);
-            List<ChoiceSeatsRequestDto> req = new ArrayList<>();
+            ChoiceSeatsRequest test1 = new ChoiceSeatsRequest(100000L, 1L,150000);
+            List<ChoiceSeatsRequest> req = new ArrayList<>();
             req.add(test1);
 //    when
-            SeatNotFoundException seatNotFoundException = assertThrows(SeatNotFoundException.class,()-> seatService.choiceSeats(req));
+            SeatNotFoundException seatNotFoundException = assertThrows(SeatNotFoundException.class,()-> seatService.choiceSeats(req, tokenInfo.id()));
 //    then
             assertEquals("Not Fount Seat",seatNotFoundException.getMessage());
         }
-
     }
 }

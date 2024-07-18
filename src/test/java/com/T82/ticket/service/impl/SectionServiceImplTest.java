@@ -1,4 +1,4 @@
-package com.T82.ticket.service;
+package com.T82.ticket.service.impl;
 
 import com.T82.ticket.dto.response.RestSeatResponseDto;
 import com.T82.ticket.global.domain.entity.Place;
@@ -6,8 +6,8 @@ import com.T82.ticket.global.domain.entity.Section;
 import com.T82.ticket.global.domain.exception.EventNotFoundException;
 import com.T82.ticket.global.domain.repository.PlaceRepository;
 import com.T82.ticket.global.domain.repository.SectionRepository;
+import com.T82.ticket.service.impl.SectionServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +36,12 @@ class SectionServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        place = new Place(1L,"장소1","주소1",new ArrayList<>());
+        place = new Place(1L, "장소1", "주소1",50 ,50,new ArrayList<>());
         placeRepository.saveAndFlush(place);
 
-        Section section1 = new Section(null, "이벤트이름1", 100L, 80L, 1000L, place, new ArrayList<>());
-        Section section2 = new Section(null, "이벤트이름2", 200L, 150L, 1500L, place, new ArrayList<>());
-        Section section3 = new Section(null, "이벤트이름3", 150L, 50L, 1200L, place, new ArrayList<>());
+        Section section1 = new Section(null, "구역이름1", 20, 10000,0, 0 ,1,1,place, new ArrayList<>());
+        Section section2 = new Section(null, "구역이름2", 10, 110000,5, 5 ,1,1,place, new ArrayList<>());
+        Section section3 = new Section(null, "구역이름3", 5, 150000,10, 10 ,1,1,place, new ArrayList<>());
 
         sectionRepository.saveAndFlush(section1);
         sectionRepository.saveAndFlush(section2);
