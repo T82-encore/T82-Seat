@@ -3,9 +3,11 @@ package com.T82.ticket.service.impl;
 import com.T82.ticket.config.util.TokenInfo;
 import com.T82.ticket.dto.request.ChoiceSeatsRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
+import com.T82.ticket.global.domain.entity.ChoiceSeat;
 import com.T82.ticket.global.domain.entity.Place;
 import com.T82.ticket.global.domain.entity.Seat;
 import com.T82.ticket.global.domain.entity.Section;
+import com.T82.ticket.global.domain.exception.SeatAlreadyChosenException;
 import com.T82.ticket.global.domain.exception.SeatNotFoundException;
 import com.T82.ticket.global.domain.repository.ChoiceSeatRepository;
 import com.T82.ticket.global.domain.repository.PlaceRepository;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -48,6 +51,9 @@ class SeatServiceImplTest {
     private Long evnetId;
     @BeforeEach
     void setUp() {
+        seatRepository.deleteAll();
+        choiceSeatRepository.deleteAll();
+
         Place place = new Place(1L, "장소1", "주소1",50 ,50,new ArrayList<>());
         placeRepository.saveAndFlush(place);
         section = new Section(null, "구역이름1", 21, 10000,0, 0 ,1,1,place, new ArrayList<>());
@@ -105,10 +111,64 @@ class SeatServiceImplTest {
             ChoiceSeatsRequest test1 = new ChoiceSeatsRequest(100000L, 1L,150000);
             List<ChoiceSeatsRequest> req = new ArrayList<>();
             req.add(test1);
+            UUID userId = UUID.randomUUID(); // UUID 생성
 //    when
-            SeatNotFoundException seatNotFoundException = assertThrows(SeatNotFoundException.class,()-> seatService.choiceSeats(req, tokenInfo.id()));
+            SeatNotFoundException seatNotFoundException = assertThrows(SeatNotFoundException.class,()-> seatService.choiceSeats(req, userId.toString()));
 //    then
             assertEquals("Not Fount Seat",seatNotFoundException.getMessage());
         }
+
+        @Test
+        @Transactional
+        void 이미_선택된_좌석일때_예외테스트() {
+            // given
+            List<Seat> seats = seatRepository.findAll();
+            seats.get(0).setIsChoicing(true);
+            seatRepository.saveAllAndFlush(seats);
+
+            UUID userId = UUID.randomUUID(); // UUID 생성
+
+            ChoiceSeatsRequest test1 = new ChoiceSeatsRequest(seats.get(0).getSeatId(), 1L, 150000);
+            List<ChoiceSeatsRequest> req = new ArrayList<>();
+            req.add(test1);
+
+            // when
+            SeatAlreadyChosenException seatAlreadyChosenException = assertThrows(SeatAlreadyChosenException.class, () -> seatService.choiceSeats(req, userId.toString()));
+
+            // then
+            assertEquals("이미 예약된 좌석입니다", seatAlreadyChosenException.getMessage());
+        }
+
+        @Test
+        @Transactional
+        void 정상적으로_좌석을_선택() {
+            // given
+            List<Seat> seats = seatRepository.findAll();
+
+            // 모든 좌석의 선택 상태를 초기화
+            seats.forEach(seat -> seat.setIsChoicing(false));
+            seatRepository.saveAllAndFlush(seats);
+
+            UUID userId = UUID.randomUUID(); // UUID 생성
+
+            ChoiceSeatsRequest test1 = new ChoiceSeatsRequest(seats.get(0).getSeatId(), 1L, 150000);
+            ChoiceSeatsRequest test2 = new ChoiceSeatsRequest(seats.get(1).getSeatId(), 2L, 150000);
+            List<ChoiceSeatsRequest> req = new ArrayList<>();
+            req.add(test1);
+            req.add(test2);
+
+            // when
+            seatService.choiceSeats(req, userId.toString());
+
+            // then
+            assertEquals(true, seatRepository.findById(seats.get(0).getSeatId()).get().getIsChoicing());
+            assertEquals(true, seatRepository.findById(seats.get(1).getSeatId()).get().getIsChoicing());
+
+            List<ChoiceSeat> choiceSeats = choiceSeatRepository.findAll();
+            assertEquals(2, choiceSeats.size());
+            assertEquals(test1.seatId(), choiceSeats.get(0).getSeatId());
+            assertEquals(test2.seatId(), choiceSeats.get(1).getSeatId());
+        }
+
     }
 }
