@@ -34,7 +34,7 @@ public class SeatServiceImpl implements SeatService {
 
     @Override
     @Transactional
-    public void choiceSeats(List<ChoiceSeatsRequest> req, String id) {
+    public void choiceSeats(List<ChoiceSeatsRequest> req, String userId) {
 
         req.forEach(dto->{
             //좌석을 찾고
@@ -44,7 +44,7 @@ public class SeatServiceImpl implements SeatService {
             //선택중으로 바꾸고
             seat.setIsChoicing(true);
             //pending 테이블에 정보를 저장
-            choiceSeatRepository.save(dto.toEntity(id));
+            choiceSeatRepository.save(dto.toEntity(userId));
         });
     }
 
