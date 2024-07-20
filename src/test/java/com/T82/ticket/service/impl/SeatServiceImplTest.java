@@ -13,7 +13,10 @@ import com.T82.ticket.global.domain.repository.ChoiceSeatRepository;
 import com.T82.ticket.global.domain.repository.PlaceRepository;
 import com.T82.ticket.global.domain.repository.SeatRepository;
 import com.T82.ticket.global.domain.repository.SectionRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +25,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -43,31 +50,37 @@ class SeatServiceImplTest {
     @Autowired
     ChoiceSeatRepository choiceSeatRepository;
 
-
+    @PersistenceContext
+    private EntityManager entityManager;
     private TokenInfo tokenInfo;
     private Section section;
 
     private Seat seat;
     private Long evnetId;
+    private List<Seat> seats;
+
     @BeforeEach
     void setUp() {
         seatRepository.deleteAll();
         choiceSeatRepository.deleteAll();
 
-        Place place = new Place(1L, "장소1", "주소1",50 ,50,new ArrayList<>());
+        Place place = new Place(1L, "장소1", "주소1", 50, 50, new ArrayList<>());
         placeRepository.saveAndFlush(place);
-        section = new Section(null, "구역이름1", 21, 10000,0, 0 ,1,1,place, new ArrayList<>());
+        section = new Section(null, "구역이름1", 21, 10000, 0, 0, 1, 1, place, new ArrayList<>());
         sectionRepository.saveAndFlush(section);
 
-
-        evnetId = section.getPlace().getEventId();
-
+        seats = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
             for (int j = 1; j <= 5; j++) {
-                Seat seat = new Seat(null,  i,  j,false,false,section);
+                Seat seat = new Seat(null, i, j, false, false, section);
                 seatRepository.saveAndFlush(seat);
+                seats.add(seat);
             }
         }
+
+        // 로그 추가: 초기화된 좌석 정보 출력
+        System.out.println("Initialized seats:");
+        seats.forEach(seat -> System.out.println("Seat ID: " + seat.getSeatId() + ", Row: " + seat.getRowNum() + ", Column: " + seat.getColNum()));
     }
 
     @Nested
@@ -83,7 +96,7 @@ class SeatServiceImplTest {
 //    when
             List<AvailableSeatsResponseDto> availableSeats = seatService.getAvailableSeats(evnetId);
 //    then
-            assertEquals(23,availableSeats.size());
+            assertEquals(23, availableSeats.size());
         }
 
         @Test
@@ -97,25 +110,24 @@ class SeatServiceImplTest {
 //    when
             List<AvailableSeatsResponseDto> availableSeats = seatService.getAvailableSeats(evnetId);
 //    then
-            assertEquals(22,availableSeats.size());
+            assertEquals(22, availableSeats.size());
         }
     }
 
     @Nested
-    @Transactional
     class 좌석을_선택하면_해당_좌석을_선택하지_못하도록하는_기능 {
         @Test
         @Transactional
         void seatId가_존재하지않는_좌석일때_예외테스트() {
 //    given
-            ChoiceSeatsRequest test1 = new ChoiceSeatsRequest(100000L, 1L,150000);
+            ChoiceSeatsRequest test1 = new ChoiceSeatsRequest(100000L, 1L, 150000);
             List<ChoiceSeatsRequest> req = new ArrayList<>();
             req.add(test1);
             UUID userId = UUID.randomUUID(); // UUID 생성
 //    when
-            SeatNotFoundException seatNotFoundException = assertThrows(SeatNotFoundException.class,()-> seatService.choiceSeats(req, userId.toString()));
+            SeatNotFoundException seatNotFoundException = assertThrows(SeatNotFoundException.class, () -> seatService.choiceSeats(req, userId.toString()));
 //    then
-            assertEquals("Not Fount Seat",seatNotFoundException.getMessage());
+            assertEquals("Not Fount Seat", seatNotFoundException.getMessage());
         }
 
         @Test
@@ -170,5 +182,47 @@ class SeatServiceImplTest {
             assertEquals(test2.seatId(), choiceSeats.get(1).getSeatId());
         }
 
+        @Test
+        @DisplayName("동시성 테스트: choiceSeats 메서드")
+        void choiceSeats_동시성_테스트() throws InterruptedException {
+            // given
+            seats.forEach(seat -> seat.setIsChoicing(false));
+            seatRepository.saveAllAndFlush(seats);
+
+            int n = 100;
+            List<ChoiceSeatsRequest> requests = new ArrayList<>();
+            ChoiceSeatsRequest choiceSeatsRequest = new ChoiceSeatsRequest(seats.get(0).getSeatId(), 1L, 150000);
+            requests.add(choiceSeatsRequest);
+
+            ExecutorService executorService = Executors.newFixedThreadPool(n);
+            Runnable[] tasks = new Runnable[n];
+
+            for (int i = 0; i < n; i++) {
+                UUID userId = UUID.randomUUID();
+
+                Runnable task = () -> {
+                    try {
+                        seatService.choiceSeats(requests, userId.toString());
+                    } catch (Exception e) {
+                        System.out.println("Exception in thread: " + e.getMessage());
+                    }
+                };
+                tasks[i] = task;
+            }
+
+            for (int i = 0; i < n; i++) {
+                executorService.submit(tasks[i]);
+            }
+
+            Thread.sleep(10000);
+            executorService.shutdown();
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
+
+            System.out.println("테스트 완료");
+
+            // then
+            List<ChoiceSeat> choiceSeats = choiceSeatRepository.findAll();
+            assertEquals(1, choiceSeats.size(), "Only one seat choice should be recorded");
+        }
     }
 }
