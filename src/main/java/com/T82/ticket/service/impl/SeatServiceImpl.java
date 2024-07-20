@@ -41,28 +41,31 @@ public class SeatServiceImpl implements SeatService {
         req.forEach(dto -> lockAndProcessSeat(dto, userId));
     }
 
+    @Transactional
     public void lockAndProcessSeat(ChoiceSeatsRequest choiceSeatsRequest, String userId) {
         String lockKey = "lock:seat:" + choiceSeatsRequest.seatId();
         RLock lock = redissonClient.getLock(lockKey);
 
         boolean isLocked = false;
         try {
-            // 락 획득 시도
-            isLocked = lock.tryLock( 5, 300, TimeUnit.SECONDS);
+            isLocked = lock.tryLock(5, 300, TimeUnit.SECONDS);
             if (isLocked) {
-                // 좌석을 찾고
-                Seat seat = seatRepository.findById(choiceSeatsRequest.seatId()).orElseThrow(SeatNotFoundException::new);
-                // 좌석이 이미 선택됐을 경우
-                if (seat.getIsChoicing()) throw new SeatAlreadyChosenException();
-                // 선택중으로 바꾸고
-                seat.setIsChoicing(true);
-                // pending 테이블에 정보를 저장
-                choiceSeatRepository.save(choiceSeatsRequest.toEntity(userId));
+                Seat seat = seatRepository.findById(choiceSeatsRequest.seatId())
+                        .orElseThrow(SeatNotFoundException::new);
+
+                synchronized (seat) {
+                    if (seat.getIsChoicing()) {
+                        throw new SeatAlreadyChosenException();
+                    }
+                    seat.setIsChoicing(true);
+                    seatRepository.save(seat); // 선택중으로 변경된 상태 저장
+                    choiceSeatRepository.save(choiceSeatsRequest.toEntity(userId));
+                }
             } else {
-                throw new RuntimeException("Could not acquire lock for key: " + lockKey);
+                throw new RuntimeException("락 획득 실패 " + lockKey);
             }
         } catch (InterruptedException e) {
-            throw new RuntimeException("Interrupted while trying to acquire lock for key: " + lockKey, e);
+            throw new RuntimeException("락 획득 중 인터럽트 발생: " + lockKey, e);
         } finally {
             if (isLocked) {
                 lock.unlock();
