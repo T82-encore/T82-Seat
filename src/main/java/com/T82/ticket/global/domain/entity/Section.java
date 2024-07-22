@@ -36,7 +36,7 @@ public class Section {
     private Integer colNum;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PLACE_ID")
+    @JoinColumn(name = "EVENT_ID")
     private Place place;
 
     @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)

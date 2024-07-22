@@ -5,7 +5,7 @@ import com.T82.ticket.global.domain.entity.ChoiceSeat;
 
 import java.util.UUID;
 
-public record ChoiceSeatsRequest(Long seatId , Long eventId , Integer price) {
+public record ChoiceSeatsRequest(Long seatId , Long eventId , int price) {
 
     public ChoiceSeat toEntity(String userId){
         return ChoiceSeat.builder()
