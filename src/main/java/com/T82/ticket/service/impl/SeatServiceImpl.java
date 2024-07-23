@@ -2,7 +2,9 @@ package com.T82.ticket.service.impl;
 
 import com.T82.ticket.dto.request.ChoiceSeatsRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
+import com.T82.ticket.dto.response.SeatDetailResponse;
 import com.T82.ticket.global.domain.entity.Seat;
+import com.T82.ticket.global.domain.entity.Section;
 import com.T82.ticket.global.domain.exception.SeatAlreadyChosenException;
 import com.T82.ticket.global.domain.exception.SeatNotFoundException;
 import com.T82.ticket.global.domain.exception.SectionNotFoundException;
@@ -29,6 +31,7 @@ public class SeatServiceImpl implements SeatService {
     private final SeatRepository seatRepository;
     private final ChoiceSeatRepository choiceSeatRepository;
     private final RedissonClient redissonClient;
+
     @Override
     public List<AvailableSeatsResponseDto> getAvailableSeats(Long eventId) {
         List<Seat> seats = sectionRepository.findAllSeatsByEventId(eventId);
@@ -48,7 +51,7 @@ public class SeatServiceImpl implements SeatService {
 
         boolean isLocked = false;
         try {
-            isLocked = lock.tryLock(5, 300, TimeUnit.SECONDS);
+            isLocked = lock.tryLock(5, 360, TimeUnit.SECONDS);
             if (isLocked) {
                 Seat seat = seatRepository.findById(choiceSeatsRequest.seatId())
                         .orElseThrow(SeatNotFoundException::new);
@@ -71,5 +74,16 @@ public class SeatServiceImpl implements SeatService {
                 lock.unlock();
             }
         }
+    }
+    @Override
+    public List<SeatDetailResponse> seatDetailResponses(List<Long> seatIds){
+       return seatIds.stream()
+                .map(seatId ->{
+                   Seat seat = seatRepository.findById(seatId)
+                           .orElseThrow(SeatNotFoundException::new);
+                    Section section = sectionRepository.findById(seat.getSection().getSectionId())
+                            .orElseThrow(SectionNotFoundException :: new);
+                    return SeatDetailResponse.from(seat,section);
+                }).toList();
     }
 }
