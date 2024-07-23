@@ -1,6 +1,7 @@
 package com.T82.ticket.controller;
 
 
+import com.T82.ticket.config.util.CheckChoiceSeatsRequestSize;
 import com.T82.ticket.config.util.TokenInfo;
 import com.T82.ticket.dto.request.ChoiceSeatsRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
@@ -27,9 +28,9 @@ public class SeatController {
     }
 
     @PutMapping("/seats/choice")
+    @CheckChoiceSeatsRequestSize
     public void choiceSeats(@AuthenticationPrincipal TokenInfo tokenInfo,
             @RequestBody List<ChoiceSeatsRequest> req){
-        if(req.size() > 5) throw new MaxSeatsException("예매 가능한 좌석의 수는 최대 5개입니다.");
         seatService.choiceSeats(req ,tokenInfo.id());
     }
     @PostMapping("/seats/detail")
