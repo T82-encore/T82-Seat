@@ -28,14 +28,16 @@ public class ExceptionController {
 
     @ExceptionHandler(SeatAlreadyChosenException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String seatNotFoundExceptionHandler(SeatAlreadyChosenException e){
+    public String SeatAlreadyChosenException(SeatAlreadyChosenException e){
         return e.getMessage();
     }
 
     @ExceptionHandler(MaxSeatsException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String seatNotFoundExceptionHandler(MaxSeatsException e){
+    public String MaxSeatsExceptionHandler(MaxSeatsException e){
         return e.getMessage();
     }
+
+
 
 }

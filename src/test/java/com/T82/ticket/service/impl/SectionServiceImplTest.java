@@ -6,7 +6,6 @@ import com.T82.ticket.global.domain.entity.Section;
 import com.T82.ticket.global.domain.exception.EventNotFoundException;
 import com.T82.ticket.global.domain.repository.PlaceRepository;
 import com.T82.ticket.global.domain.repository.SectionRepository;
-import com.T82.ticket.service.impl.SectionServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -30,7 +29,7 @@ class SectionServiceImplTest {
     PlaceRepository placeRepository;
 
     @Autowired
-    SectionServiceImpl sectionService;
+    SeatServiceImpl sectionService;
 
     private Place place;
 
