@@ -43,17 +43,11 @@ public class SeatServiceImpl implements SeatService , SectionService {
     }
 
     @Override
-    @Transactional
     public void choiceSeats(List<ChoiceSeatsRequest> req, String userId) {
-        boolean InvalidSeats =req.stream()
-                        .map(dto -> seatRepository.findById(dto.seatId())
-                                        .orElseThrow(SeatNotFoundException::new))
-                                .anyMatch(seat -> seat.getIsChoicing() || seat.getIsBooked());
-        if (InvalidSeats) throw new SeatAlreadyChosenException();
-
         req.forEach(dto -> lockAndProcessSeat(dto, userId));
     }
 
+    @Transactional
     public void lockAndProcessSeat(ChoiceSeatsRequest choiceSeatsRequest, String userId) {
         String lockKey = "lock:seat:" + choiceSeatsRequest.seatId();
         RLock lock = redissonClient.getLock(lockKey);
@@ -62,7 +56,15 @@ public class SeatServiceImpl implements SeatService , SectionService {
         try {
             isLocked = lock.tryLock(5, 360, TimeUnit.SECONDS);
             if (isLocked) {
-                processSeat(choiceSeatsRequest, userId);
+                Seat seat = seatRepository.findById(choiceSeatsRequest.seatId())
+                        .orElseThrow(SeatNotFoundException::new);
+
+                synchronized (seat) {
+                    choiceSeatRepository.save(choiceSeatsRequest.toEntity(userId));
+
+                    if(choiceSeatRepository.findBySeatId(choiceSeatsRequest.seatId()) == null)
+                        throw new SeatAlreadyChosenException();
+                }
             } else {
                 throw new RuntimeException("락 획득 실패 " + lockKey);
             }
@@ -74,31 +76,21 @@ public class SeatServiceImpl implements SeatService , SectionService {
             }
         }
     }
-    @Transactional
-    public void processSeat(ChoiceSeatsRequest choiceSeatsRequest, String userId) {
-        Seat seat = seatRepository.findById(choiceSeatsRequest.seatId())
-                .orElseThrow(SeatNotFoundException::new);
-
-        if (seat.getIsChoicing() || seat.getIsBooked()) {
-            throw new SeatAlreadyChosenException();
-        }
-
-        seat.setIsChoicing(true);
-        seatRepository.save(seat); // 선택중으로 변경된 상태 저장
-        choiceSeatRepository.save(choiceSeatsRequest.toEntity(userId));
-    }
-
     @Override
     public List<SeatDetailResponse> seatDetailResponses(List<Long> seatIds){
-       return seatIds.stream()
+        return seatIds.stream()
                 .map(seatId ->{
-                   Seat seat = seatRepository.findById(seatId)
-                           .orElseThrow(SeatNotFoundException::new);
+                    Seat seat = seatRepository.findById(seatId)
+                            .orElseThrow(SeatNotFoundException::new);
+
+                    Seat.seatBook(seat);
+
                     Section section = sectionRepository.findById(seat.getSection().getSectionId())
                             .orElseThrow(SectionNotFoundException :: new);
                     return SeatDetailResponse.from(seat,section);
                 }).toList();
     }
+
 
     @Override
     public List<RestSeatResponseDto> getAvailableSeatCountPerSection(Long eventId) {
