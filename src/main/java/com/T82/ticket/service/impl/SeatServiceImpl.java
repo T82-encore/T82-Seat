@@ -59,11 +59,11 @@ public class SeatServiceImpl implements SeatService , SectionService {
                 Seat seat = seatRepository.findById(choiceSeatsRequest.seatId())
                         .orElseThrow(SeatNotFoundException::new);
 
+                if(choiceSeatRepository.findBySeatId(choiceSeatsRequest.seatId()) != null)
+                    throw new SeatAlreadyChosenException();
+
                 synchronized (seat) {
                     choiceSeatRepository.save(choiceSeatsRequest.toEntity(userId));
-
-                    if(choiceSeatRepository.findBySeatId(choiceSeatsRequest.seatId()) == null)
-                        throw new SeatAlreadyChosenException();
                 }
             } else {
                 throw new RuntimeException("락 획득 실패 " + lockKey);
