@@ -5,7 +5,7 @@ import com.T82.ticket.global.domain.entity.Section;
 import lombok.Builder;
 
 @Builder
-public record SeatDetailResponse(Long seatId,String seatSection,int seatRowNumber ,int seatColumNumber) {
+public record SeatDetailResponse(Long seatId,String seatSection,int seatRowNumber ,int seatColumnNumber) {
 
 
     public static SeatDetailResponse from(Seat seat , Section section){
@@ -13,7 +13,7 @@ public record SeatDetailResponse(Long seatId,String seatSection,int seatRowNumbe
                 .seatId(seat.getSeatId())
                 .seatSection(section.getName())
                 .seatRowNumber(seat.getRowNum())
-                .seatColumNumber(seat.getColNum())
+                .seatColumnNumber(seat.getColNum())
                 .build();
 
     }

@@ -4,6 +4,7 @@ package com.T82.ticket.controller;
 import com.T82.ticket.config.util.CheckChoiceSeatsRequestSize;
 import com.T82.ticket.config.util.TokenInfo;
 import com.T82.ticket.dto.request.ChoiceSeatsRequest;
+import com.T82.ticket.dto.request.SeatDetailRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
 import com.T82.ticket.dto.response.SeatDetailResponse;
 import com.T82.ticket.global.domain.exception.MaxSeatsException;
@@ -34,7 +35,8 @@ public class SeatController {
         seatService.choiceSeats(req ,tokenInfo.id());
     }
     @PostMapping("/seats/detail")
-    public List<SeatDetailResponse> getDetails(List<Long> seatIds){
+    public List<SeatDetailResponse> getDetails(@RequestBody SeatDetailRequest seatIds){
+        log.info("박현서 너야?" + seatIds.getSeatIds());
         return seatService.seatDetailResponses(seatIds);
     }
 

@@ -1,6 +1,7 @@
 package com.T82.ticket.service.impl;
 
 import com.T82.ticket.dto.request.ChoiceSeatsRequest;
+import com.T82.ticket.dto.request.SeatDetailRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
 import com.T82.ticket.dto.response.RestSeatResponseDto;
 import com.T82.ticket.dto.response.SeatDetailResponse;
@@ -77,11 +78,13 @@ public class SeatServiceImpl implements SeatService , SectionService {
         }
     }
     @Override
-    public List<SeatDetailResponse> seatDetailResponses(List<Long> seatIds){
-        return seatIds.stream()
+    @Transactional
+    public List<SeatDetailResponse> seatDetailResponses(SeatDetailRequest seatIds){
+        return seatIds.getSeatIds().stream()
                 .map(seatId ->{
                     Seat seat = seatRepository.findById(seatId)
                             .orElseThrow(SeatNotFoundException::new);
+                    log.info("seatId" + seat.getSeatId());
 
                     Seat.seatBook(seat);
 
