@@ -1,6 +1,5 @@
 package com.T82.ticket.global.domain.entity;
 
-import com.T82.ticket.dto.request.SectionInitRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,8 +17,6 @@ public class Seat {
     private Integer rowNum;
     @Column(name = "COLUMN_NUM")
     private Integer colNum;
-    @Column(name = "IS_CHOICING") @Setter
-    private Boolean isChoicing;
     @Column(name = "IS_BOOKED") @Setter
     private Boolean isBooked;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,9 +28,12 @@ public class Seat {
                 .seatId(null)
                 .rowNum(row)
                 .colNum(col)
-                .isChoicing(false)
                 .isBooked(false)
                 .section(section)
                 .build();
+    }
+
+    public static void seatBook(Seat seat){
+        seat.setIsBooked(true);
     }
 }
