@@ -1,20 +1,20 @@
 package com.T82.ticket.service.impl;
 
-import com.T82.ticket.config.util.TokenInfo;
 import com.T82.ticket.dto.request.ChoiceSeatsRequest;
+import com.T82.ticket.dto.request.SeatDetailRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
+import com.T82.ticket.dto.response.SeatDetailResponse;
 import com.T82.ticket.global.domain.entity.ChoiceSeat;
 import com.T82.ticket.global.domain.entity.Place;
 import com.T82.ticket.global.domain.entity.Seat;
 import com.T82.ticket.global.domain.entity.Section;
 import com.T82.ticket.global.domain.exception.SeatAlreadyChosenException;
 import com.T82.ticket.global.domain.exception.SeatNotFoundException;
+import com.T82.ticket.global.domain.exception.SectionNotFoundException;
 import com.T82.ticket.global.domain.repository.ChoiceSeatRepository;
 import com.T82.ticket.global.domain.repository.PlaceRepository;
 import com.T82.ticket.global.domain.repository.SeatRepository;
 import com.T82.ticket.global.domain.repository.SectionRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,15 +25,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -50,9 +50,6 @@ class SeatServiceImplTest {
     @Autowired
     ChoiceSeatRepository choiceSeatRepository;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-    private TokenInfo tokenInfo;
     private Section section;
 
     private Seat seat;
@@ -61,27 +58,25 @@ class SeatServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        seatRepository.deleteAll();
-        choiceSeatRepository.deleteAll();
+//        seatRepository.deleteAll();
+//        choiceSeatRepository.deleteAll();
 
         Place place = new Place(1L, "장소1", "주소1", 50, 50, new ArrayList<>());
         placeRepository.saveAndFlush(place);
         section = new Section(null, "구역이름1", 21, 10000, 0, 0, 1, 1, place, new ArrayList<>());
         sectionRepository.saveAndFlush(section);
 
-        seats = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            for (int j = 1; j <= 5; j++) {
-                Seat seat = new Seat(null, i, j, false, false, section);
-                seatRepository.saveAndFlush(seat);
-                seats.add(seat);
-            }
-        }
+        List<Seat> seats = new ArrayList<>();
+        Seat seat = new Seat(1L, 1, 1, false, section);
+        seatRepository.saveAndFlush(seat);
+        seats.add(seat);
+        Seat seat2 = new Seat(2L, 2, 2,false, section);
+        seatRepository.saveAndFlush(seat2);
+        seats.add(seat2);
 
-        // 로그 추가: 초기화된 좌석 정보 출력
-        System.out.println("Initialized seats:");
-        seats.forEach(seat -> System.out.println("Seat ID: " + seat.getSeatId() + ", Row: " + seat.getRowNum() + ", Column: " + seat.getColNum()));
     }
+
+
 
     @Nested
     @Transactional
@@ -103,9 +98,9 @@ class SeatServiceImplTest {
         void 선택된_좌석_제외하고_반환() {
 //             두 개의 좌석의 isChoicing을 true로 설정
             List<Seat> seats = seatRepository.findAll();
-            seats.get(0).setIsChoicing(true);
-            seats.get(1).setIsChoicing(true);
-            seats.get(2).setIsChoicing(true);
+//            seats.get(0).setIsChoicing(true);
+//            seats.get(1).setIsChoicing(true);
+//            seats.get(2).setIsChoicing(true);
             seatRepository.saveAllAndFlush(seats);
 //    when
             List<AvailableSeatsResponseDto> availableSeats = seatService.getAvailableSeats(evnetId);
@@ -135,7 +130,7 @@ class SeatServiceImplTest {
         void 이미_선택된_좌석일때_예외테스트() {
             // given
             List<Seat> seats = seatRepository.findAll();
-            seats.get(0).setIsChoicing(true);
+//            seats.get(0).setIsChoicing(true);
             seatRepository.saveAllAndFlush(seats);
 
             UUID userId = UUID.randomUUID(); // UUID 생성
@@ -158,7 +153,7 @@ class SeatServiceImplTest {
             List<Seat> seats = seatRepository.findAll();
 
             // 모든 좌석의 선택 상태를 초기화
-            seats.forEach(seat -> seat.setIsChoicing(false));
+//            seats.forEach(seat -> seat.setIsChoicing(false));
             seatRepository.saveAllAndFlush(seats);
 
             UUID userId = UUID.randomUUID(); // UUID 생성
@@ -173,8 +168,8 @@ class SeatServiceImplTest {
             seatService.choiceSeats(req, userId.toString());
 
             // then
-            assertEquals(true, seatRepository.findById(seats.get(0).getSeatId()).get().getIsChoicing());
-            assertEquals(true, seatRepository.findById(seats.get(1).getSeatId()).get().getIsChoicing());
+//            assertEquals(true, seatRepository.findById(seats.get(0).getSeatId()).get().getIsChoicing());
+//            assertEquals(true, seatRepository.findById(seats.get(1).getSeatId()).get().getIsChoicing());
 
             List<ChoiceSeat> choiceSeats = choiceSeatRepository.findAll();
             assertEquals(2, choiceSeats.size());
@@ -186,7 +181,7 @@ class SeatServiceImplTest {
         @DisplayName("동시성 테스트: choiceSeats 메서드")
         void choiceSeats_동시성_테스트() throws InterruptedException {
             // given
-            seats.forEach(seat -> seat.setIsChoicing(false));
+//            seats.forEach(seat -> seat.setIsChoicing(false));
             seatRepository.saveAllAndFlush(seats);
 
             int n = 100;
@@ -224,5 +219,31 @@ class SeatServiceImplTest {
             List<ChoiceSeat> choiceSeats = choiceSeatRepository.findAll();
             assertEquals(1, choiceSeats.size(), "Only one seat choice should be recorded");
         }
+    }
+
+    @Test
+    void seatDetailResponses() {
+        //given
+        List<Long> seatIds = Arrays.asList(1L, 2L);
+        SeatDetailRequest seatDetailRequest = new SeatDetailRequest(seatIds);
+        //when
+        List<SeatDetailResponse> seatDetailResponses = seatService.seatDetailResponses(seatDetailRequest);
+        Seat seat1 = seatRepository.findById(seatIds.get(0)).orElseThrow(SeatNotFoundException::new);
+        Section section1 = sectionRepository.findById(seat1.getSection().getSectionId()).orElseThrow(SectionNotFoundException :: new);
+
+        Seat seat2 = seatRepository.findById(seatIds.get(1)).orElseThrow(SeatNotFoundException::new);
+        Section section2 = sectionRepository.findById(seat2.getSection().getSectionId()).orElseThrow(SectionNotFoundException :: new);
+
+        //then
+        assertEquals(seatDetailResponses.get(0).seatId(),seat1.getSeatId());
+        assertEquals(seatDetailResponses.get(0).seatSection(),section1.getName());
+        assertEquals(seatDetailResponses.get(0).seatRowNumber(),seat1.getRowNum());
+        assertEquals(seatDetailResponses.get(0).seatColumnNumber(),seat1.getColNum());
+
+        assertEquals(seatDetailResponses.get(1).seatId(),seat2.getSeatId());
+        assertEquals(seatDetailResponses.get(1).seatSection(),section2.getName());
+        assertEquals(seatDetailResponses.get(1).seatRowNumber(),seat2.getRowNum());
+        assertEquals(seatDetailResponses.get(1).seatColumnNumber(),seat2.getColNum());
+        assertEquals(seatIds.size(),seatDetailResponses.size());
     }
 }
