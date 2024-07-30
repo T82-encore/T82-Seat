@@ -27,8 +27,6 @@ public class InitServiceImpl implements InitService {
     @Transactional
     public void initEventPlace(EventInitRequestDto req) {
 
-        if(req.seatAvailable()) {
-
             Place savedPlace = placeRepository.save(Place.toEntity(req));
 
             req.sectionInitRequest().forEach(sectionInitRequestDto -> {
@@ -45,6 +43,4 @@ public class InitServiceImpl implements InitService {
                 }
             });
         }
-
     }
-}

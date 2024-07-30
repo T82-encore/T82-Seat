@@ -90,6 +90,9 @@ public class SeatServiceImpl implements SeatService , SectionService {
 
                     Section section = sectionRepository.findById(seat.getSection().getSectionId())
                             .orElseThrow(SectionNotFoundException :: new);
+
+                    Section.DecreaseInSectionSeats(section);
+
                     return SeatDetailResponse.from(seat,section);
                 }).toList();
     }
