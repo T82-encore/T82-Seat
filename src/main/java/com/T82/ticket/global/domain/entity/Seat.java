@@ -33,7 +33,11 @@ public class Seat {
                 .build();
     }
 
-    public static void seatBook(Seat seat){
+    public static void SeatBook(Seat seat){
         seat.setIsBooked(true);
+    }
+
+    public static void SeatRefund(Seat seat){
+        seat.setIsBooked(false);
     }
 }
