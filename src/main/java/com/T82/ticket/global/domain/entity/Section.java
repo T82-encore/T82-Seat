@@ -59,5 +59,4 @@ public class Section {
     public static void IncreaseInSectionSeats(Section section){
         section.setRestSeat(section.getRestSeat() + 1);
     }
-
 }
