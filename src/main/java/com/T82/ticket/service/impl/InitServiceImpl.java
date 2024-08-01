@@ -22,7 +22,7 @@ public class InitServiceImpl implements InitService {
     private final PlaceRepository placeRepository;
     private final SectionRepository sectionRepository;
     private final SeatRepository seatRepository;
-    @KafkaListener(topics = "eventTopic")
+    @KafkaListener(topics = "eventTopic", groupId = "eventInit-group")
     @Override
     @Transactional
     public void initEventPlace(EventInitRequestDto req) {
