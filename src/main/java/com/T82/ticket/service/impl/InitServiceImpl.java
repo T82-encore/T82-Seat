@@ -22,10 +22,11 @@ public class InitServiceImpl implements InitService {
     private final PlaceRepository placeRepository;
     private final SectionRepository sectionRepository;
     private final SeatRepository seatRepository;
-    @KafkaListener(topics = "eventTopic", groupId = "eventInit-group")
+    @KafkaListener(topics = "eventTopic")
     @Override
     @Transactional
     public void initEventPlace(EventInitRequestDto req) {
+            log.info("이벤트 ID" + req.eventId());
 
             Place savedPlace = placeRepository.save(Place.toEntity(req));
 
