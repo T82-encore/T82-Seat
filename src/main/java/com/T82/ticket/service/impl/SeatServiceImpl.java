@@ -1,6 +1,9 @@
 package com.T82.ticket.service.impl;
 
 import com.T82.ticket.dto.request.ChoiceSeatsRequest;
+
+import com.T82.ticket.dto.request.RefundSeatRequest;
+
 import com.T82.ticket.dto.request.SeatDetailRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
 import com.T82.ticket.dto.response.RestSeatResponseDto;
@@ -20,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,10 +90,14 @@ public class SeatServiceImpl implements SeatService , SectionService {
                             .orElseThrow(SeatNotFoundException::new);
                     log.info("seatId" + seat.getSeatId());
 
-                    Seat.seatBook(seat);
+                    Seat.SeatBook(seat);
 
                     Section section = sectionRepository.findById(seat.getSection().getSectionId())
                             .orElseThrow(SectionNotFoundException :: new);
+
+                    Section.DecreaseInSectionSeats(section);
+
+
                     return SeatDetailResponse.from(seat,section);
                 }).toList();
     }
@@ -100,5 +108,20 @@ public class SeatServiceImpl implements SeatService , SectionService {
         List<Section> allByEventId = sectionRepository.findAllByEventId(eventId);
         if(allByEventId.isEmpty()) throw new EventNotFoundException();
         return allByEventId.stream().map(RestSeatResponseDto::from).toList();
+    }
+  
+    @KafkaListener(topics = "refundSeat")
+    @Transactional
+    public void seatRefund (RefundSeatRequest refundSeatRequest){
+        Seat seat = seatRepository.findById(refundSeatRequest.getSeatId())
+                .orElseThrow(SeatNotFoundException :: new);
+
+        Seat.SeatRefund(seat);
+        log.info("Seat refund processed for seatId: {}", refundSeatRequest.getSeatId());
+        Section section =sectionRepository.findById(seat.getSection().getSectionId())
+                .orElseThrow(SectionNotFoundException :: new);
+
+        Section.IncreaseInSectionSeats(section);
+        log.info("Increased section seats for sectionId: {}", seat.getSection().getRestSeat());
     }
 }

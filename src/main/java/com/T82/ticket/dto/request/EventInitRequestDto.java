@@ -5,7 +5,7 @@ import java.util.List;
 public record EventInitRequestDto (Long eventId,
                                    String placeName,
                                    String address,
-                                   Boolean seatAvailable,
+                                   boolean seatAvailable,
                                    Integer totalSeat,
                                    Integer totalRow,
                                    Integer totalCol,

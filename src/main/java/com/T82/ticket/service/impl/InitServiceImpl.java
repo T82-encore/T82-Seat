@@ -26,10 +26,10 @@ public class InitServiceImpl implements InitService {
     @Override
     @Transactional
     public void initEventPlace(EventInitRequestDto req) {
-
-        if(req.seatAvailable()) {
+            log.info("이벤트 ID" + req.eventId());
 
             Place savedPlace = placeRepository.save(Place.toEntity(req));
+
 
             req.sectionInitRequest().forEach(sectionInitRequestDto -> {
                 Section savedSection = sectionRepository.save(Section.toEntity(sectionInitRequestDto, savedPlace));
@@ -45,6 +45,4 @@ public class InitServiceImpl implements InitService {
                 }
             });
         }
-
     }
-}

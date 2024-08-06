@@ -1,7 +1,6 @@
 package com.T82.ticket.global.domain.entity;
 
 import com.T82.ticket.dto.request.EventInitRequestDto;
-import com.T82.ticket.dto.request.SectionInitRequestDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

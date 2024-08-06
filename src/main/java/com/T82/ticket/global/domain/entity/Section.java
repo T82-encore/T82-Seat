@@ -2,10 +2,7 @@ package com.T82.ticket.global.domain.entity;
 
 import com.T82.ticket.dto.request.SectionInitRequestDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +19,7 @@ public class Section {
     private Long sectionId;
     @Column(name = "NAME")
     private String name;
-    @Column(name = "REST_SEAT")
+    @Column(name = "REST_SEAT")@Setter
     private Integer restSeat;
     @Column(name = "PRICE")
     private Integer price;
@@ -54,5 +51,12 @@ public class Section {
                 .restSeat(req.sectionTotalSeat())
                 .place(place)
                 .build();
+    }
+    public static void DecreaseInSectionSeats(Section section){
+        section.setRestSeat(section.getRestSeat() - 1);
+    }
+
+    public static void IncreaseInSectionSeats(Section section){
+        section.setRestSeat(section.getRestSeat() + 1);
     }
 }
