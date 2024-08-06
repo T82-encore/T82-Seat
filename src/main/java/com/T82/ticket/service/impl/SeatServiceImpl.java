@@ -1,7 +1,9 @@
 package com.T82.ticket.service.impl;
 
 import com.T82.ticket.dto.request.ChoiceSeatsRequest;
+
 import com.T82.ticket.dto.request.RefundSeatRequest;
+
 import com.T82.ticket.dto.request.SeatDetailRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
 import com.T82.ticket.dto.response.RestSeatResponseDto;
@@ -95,6 +97,7 @@ public class SeatServiceImpl implements SeatService , SectionService {
 
                     Section.DecreaseInSectionSeats(section);
 
+
                     return SeatDetailResponse.from(seat,section);
                 }).toList();
     }
@@ -106,8 +109,8 @@ public class SeatServiceImpl implements SeatService , SectionService {
         if(allByEventId.isEmpty()) throw new EventNotFoundException();
         return allByEventId.stream().map(RestSeatResponseDto::from).toList();
     }
-
-    @KafkaListener(topics = "refundSeat", groupId = "refundSeat-group")
+  
+    @KafkaListener(topics = "refundSeat")
     @Transactional
     public void seatRefund (RefundSeatRequest refundSeatRequest){
         Seat seat = seatRepository.findById(refundSeatRequest.getSeatId())
@@ -121,5 +124,4 @@ public class SeatServiceImpl implements SeatService , SectionService {
         Section.IncreaseInSectionSeats(section);
         log.info("Increased section seats for sectionId: {}", seat.getSection().getRestSeat());
     }
-
 }

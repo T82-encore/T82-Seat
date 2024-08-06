@@ -30,6 +30,7 @@ public class InitServiceImpl implements InitService {
 
             Place savedPlace = placeRepository.save(Place.toEntity(req));
 
+
             req.sectionInitRequest().forEach(sectionInitRequestDto -> {
                 Section savedSection = sectionRepository.save(Section.toEntity(sectionInitRequestDto, savedPlace));
                 int startRow = sectionInitRequestDto.startRow();
