@@ -6,11 +6,11 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <script th:src="@{/js/script.js}"></script>
     <script>
-        function checkQueueStatus(eventId, userId) {
-            fetch(`/api/v1/events/${eventId}/queue/status/${userId}`, {
+        function checkQueueStatus(eventId, token) {
+            fetch(`/api/v1/events/${eventId}/queue/status/user`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Authorization': 'Bearer ' + token
                 }
             })
                 .then(response => response.json())
@@ -18,7 +18,7 @@
                     if (data.status === 'ENDED') {
                         window.location.href = "hellot82://"; // 앱으로 돌아가기 위한 리다이렉션
                     } else {
-                        setTimeout(() => checkQueueStatus(eventId, userId), 5000); // 5초 후 다시 체크
+                        setTimeout(() => checkQueueStatus(eventId, token), 60000);
                     }
                 });
         }
