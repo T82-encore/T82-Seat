@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Queue</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/script.js}"></script>
+    <script>
+        function checkQueueStatus(eventId, userId) {
+            fetch(`/api/v1/events/${eventId}/queue/status/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ENDED') {
+                        window.location.href = "hellot82://"; // 앱으로 돌아가기 위한 리다이렉션
+                    } else {
+                        setTimeout(() => checkQueueStatus(eventId, userId), 5000); // 5초 후 다시 체크
+                    }
+                });
+        }
+
+        function updateQueueStatus(eventId, token) {
+            fetch(`/api/v1/events/${eventId}/queue/total/users`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('totalMembers').textContent = data.totalMembers;
+                });
+
+            fetch(`/api/v1/events/${eventId}/queue/position`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('userPosition').textContent = data.userPosition;
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const eventId = /*[[${eventId}]]*/ '[[${eventId}]]';
+            const userId = /*[[${token.id}]]*/ '[[${token.id}]]';
+            const token = /*[[${token}]]*/ '[[${token}]]';
+
+            updateQueueStatus(eventId, token);
+            setInterval(() => updateQueueStatus(eventId, token), 5000); // 5초마다 업데이트
+            checkQueueStatus(eventId, userId); // 폴링 시작
+        });
+    </script>
+</head>
+<body>
+<h1>현재 대기열</h1>
+<div>
+    <p>대기열 내 총 인원: <span id="totalMembers" th:text="${totalMembers}"></span></p>
+    <p>나의 순번: <span id="userPosition" th:text="${userPosition}"></span></p>
+    <div th:if="${errorMessage}" style="color: red;">
+        <p th:text="${errorMessage}"></p>
+    </div>
+</div>
+</body>
+</html>
