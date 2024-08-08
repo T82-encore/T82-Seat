@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +37,10 @@ public class WaitingQueueServiceImpl implements WaitingQueueService {
         String queueKey = makeQueueKey(eventId);
         Long result = zSetOperations.remove(queueKey, userId);
         log.info("대기열 삭제 회원 ID: {} queueKey: {} 결과: {}", userId, queueKey, result);
+
+        if (result != null && result > 0) {
+            redisTemplate.opsForValue().set("queue:status:" + eventId + ":" + userId, "ENDED",1, TimeUnit.MINUTES);
+        }
     }
 
     @Override
@@ -50,11 +55,11 @@ public class WaitingQueueServiceImpl implements WaitingQueueService {
     public Long getUserPosition(Long eventId, String userId) {
         String queueKey = makeQueueKey(eventId);
         Long position = zSetOperations.rank(queueKey, userId);
-        log.info("회원 ID {} 현재 내 위치 {}: {}", userId, queueKey, position);
+        log.info("회원 ID {} 현재 내 위치 {}: {}", userId, queueKey, position + 1);
         return position + 1 ;
     }
 
-    @Scheduled(fixedRate = 10000000)
+    @Scheduled(fixedRate = 10000)
     public void processQueue() {
         Set<String> keys = redisTemplate.keys(QUEUE_KEY_PREFIX + "*");
         if (keys != null) {
