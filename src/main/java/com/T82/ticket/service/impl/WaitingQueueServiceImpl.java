@@ -9,7 +9,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+
 import java.util.concurrent.TimeUnit;
+
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +62,7 @@ public class WaitingQueueServiceImpl implements WaitingQueueService {
     }
 
     @Scheduled(fixedRate = 60000)
+
     public void processQueue() {
         Set<String> keys = redisTemplate.keys(QUEUE_KEY_PREFIX + "*");
         if (keys != null) {

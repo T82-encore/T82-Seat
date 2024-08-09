@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/events")
@@ -18,6 +19,7 @@ public class WaitingQueueController {
 
     private final WaitingQueueService waitingQueueService;
     private final RedisTemplate<String, String> redisTemplate;
+
     /*
     * 해당 이벤트의 대기열 정보 가져오기
     * */
@@ -38,6 +40,7 @@ public class WaitingQueueController {
     public void queueEntry(@PathVariable Long eventId , @AuthenticationPrincipal TokenInfo tokenInfo){
         waitingQueueService.addQueue(eventId, tokenInfo.id());
     }
+
     /*
      * Polling 방식으로 대기열의 상황을 알려주기 위한 컨트롤러
      *
