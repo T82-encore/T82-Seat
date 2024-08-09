@@ -21,6 +21,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 ext {
@@ -62,6 +63,9 @@ dependencies {
 
 	//WebSocket
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	//Custom Exception
+	implementation 'com.github.T82-encore:T82-Common-Exception:v0.8.34'
 }
 
 tasks.named('test') {

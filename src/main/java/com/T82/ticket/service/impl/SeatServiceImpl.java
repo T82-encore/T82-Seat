@@ -1,19 +1,20 @@
 package com.T82.ticket.service.impl;
 
+import com.T82.common_exception.annotation.CustomException;
+import com.T82.common_exception.annotation.ExecutionTimeLog;
+import com.T82.common_exception.exception.ErrorCode;
+import com.T82.common_exception.exception.seat.EventNotFoundException;
+import com.T82.common_exception.exception.seat.SeatAlreadyChosenException;
+import com.T82.common_exception.exception.seat.SeatNotFoundException;
+import com.T82.common_exception.exception.seat.SectionNotFoundException;
 import com.T82.ticket.dto.request.ChoiceSeatsRequest;
-
 import com.T82.ticket.dto.request.RefundSeatRequest;
-
 import com.T82.ticket.dto.request.SeatDetailRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
 import com.T82.ticket.dto.response.RestSeatResponseDto;
 import com.T82.ticket.dto.response.SeatDetailResponse;
 import com.T82.ticket.global.domain.entity.Seat;
 import com.T82.ticket.global.domain.entity.Section;
-import com.T82.ticket.global.domain.exception.EventNotFoundException;
-import com.T82.ticket.global.domain.exception.SeatAlreadyChosenException;
-import com.T82.ticket.global.domain.exception.SeatNotFoundException;
-import com.T82.ticket.global.domain.exception.SectionNotFoundException;
 import com.T82.ticket.global.domain.repository.ChoiceSeatRepository;
 import com.T82.ticket.global.domain.repository.SeatRepository;
 import com.T82.ticket.global.domain.repository.SectionRepository;
@@ -41,6 +42,7 @@ public class SeatServiceImpl implements SeatService , SectionService {
     private final RedissonClient redissonClient;
 
     @Override
+    @CustomException(ErrorCode.SECTION_NOT_FOUND)
     public List<AvailableSeatsResponseDto> getAvailableSeats(Long eventId) {
         List<Seat> seats = sectionRepository.findAllSeatsByEventId(eventId);
         if(seats.isEmpty()) throw new SectionNotFoundException();
@@ -53,6 +55,7 @@ public class SeatServiceImpl implements SeatService , SectionService {
     }
 
     @Transactional
+    @CustomException(ErrorCode.SEAT_NOT_FOUND)
     public void lockAndProcessSeat(ChoiceSeatsRequest choiceSeatsRequest, String userId) {
         String lockKey = "lock:seat:" + choiceSeatsRequest.seatId();
         RLock lock = redissonClient.getLock(lockKey);
@@ -83,6 +86,8 @@ public class SeatServiceImpl implements SeatService , SectionService {
     }
     @Override
     @Transactional
+    @CustomException(ErrorCode.FAILED_GENERATE_TICKET)
+    @ExecutionTimeLog
     public List<SeatDetailResponse> seatDetailResponses(SeatDetailRequest seatIds){
         return seatIds.getSeatIds().stream()
                 .map(seatId ->{
@@ -112,6 +117,7 @@ public class SeatServiceImpl implements SeatService , SectionService {
   
     @KafkaListener(topics = "refundSeat")
     @Transactional
+    @CustomException(ErrorCode.FAILED_REFUND_TICKET)
     public void seatRefund (RefundSeatRequest refundSeatRequest){
         Seat seat = seatRepository.findById(refundSeatRequest.getSeatId())
                 .orElseThrow(SeatNotFoundException :: new);
@@ -119,7 +125,7 @@ public class SeatServiceImpl implements SeatService , SectionService {
         Seat.SeatRefund(seat);
         log.info("Seat refund processed for seatId: {}", refundSeatRequest.getSeatId());
         Section section =sectionRepository.findById(seat.getSection().getSectionId())
-                .orElseThrow(SectionNotFoundException :: new);
+                .orElseThrow(SectionNotFoundException:: new);
 
         Section.IncreaseInSectionSeats(section);
         log.info("Increased section seats for sectionId: {}", seat.getSection().getRestSeat());

@@ -59,7 +59,7 @@ public class WaitingQueueServiceImpl implements WaitingQueueService {
         return position + 1 ;
     }
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 60000)
     public void processQueue() {
         Set<String> keys = redisTemplate.keys(QUEUE_KEY_PREFIX + "*");
         if (keys != null) {
