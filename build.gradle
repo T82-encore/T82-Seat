@@ -21,6 +21,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 ext {
@@ -47,6 +48,8 @@ dependencies {
 	//grpc
 	implementation 'net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE'
 	implementation files('libs/TicketSeatHub-1.0-SNAPSHOT.jar')
+	//Custom Exception
+	implementation 'com.github.T82-encore:T82-Common-Exception:v0.8.34'
 
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	//Jwt

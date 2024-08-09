@@ -32,34 +32,33 @@ public class GrpcServer extends SeatGrpc.SeatImplBase{
     @Override
     public void getSeatDetail(SeatDetailRequest request, StreamObserver<SeatDetailResponse> responseObserver) {
         List<Seat> seats = new ArrayList<>();
+        List<Section> sections = new ArrayList<>();
         request.getSeatIdList().forEach(seatId -> {
             Seat seat = seatRepository.findById(seatId)
                     .orElseThrow(SeatNotFoundException::new);
             log.info("seatId" + seat.getSeatId());
 
+            Section section = sectionRepository.findById(seat.getSection().getSectionId())
+                    .orElseThrow(SectionNotFoundException:: new);
+
             responseObserver.onNext(
                     SeatDetailResponse.newBuilder()
                             .setId(seatId)
-                            .setSection(seat.getSection().getName())
+                            .setSection(section.getName())
                             .setRowNum(seat.getRowNum())
                             .setColNum(seat.getColNum())
                             .build()
             );
             seats.add(seat);
+            sections.add(section);
         });
         responseObserver.onCompleted();
-        complete(seats);
+        complete(seats, sections);
     }
 
     @Transactional
-    public void complete(List<Seat> seats) {
-        seats.forEach(seat -> {
-            Seat.SeatBook(seat);
-
-            Section section = sectionRepository.findById(seat.getSection().getSectionId())
-                    .orElseThrow(SectionNotFoundException:: new);
-
-            Section.DecreaseInSectionSeats(section);
-        });
+    public void complete(List<Seat> seats, List<Section> sections) {
+        seats.forEach(Seat::SeatBook);
+        sections.forEach(Section::DecreaseInSectionSeats);
     }
 }
