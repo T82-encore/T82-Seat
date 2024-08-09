@@ -1,6 +1,5 @@
 package com.T82.ticket.service.impl;
 
-import com.T82.ticket.config.util.TokenInfo;
 import com.T82.ticket.dto.request.EventInitRequestDto;
 import com.T82.ticket.global.domain.entity.Place;
 import com.T82.ticket.global.domain.entity.Seat;
