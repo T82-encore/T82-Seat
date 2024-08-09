@@ -45,6 +45,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	// redisson
 	implementation 'org.redisson:redisson-spring-boot-starter:3.27.0'
+	//grpc
+	implementation 'net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE'
+	implementation files('libs/TicketSeatHub-1.0-SNAPSHOT.jar')
 
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	//Jwt
