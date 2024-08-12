@@ -38,6 +38,7 @@ public class GrpcServer extends SeatGrpc.SeatImplBase{
                     .orElseThrow(SeatNotFoundException::new);
             log.info("seatId" + seat.getSeatId());
 
+
             Section section = sectionRepository.findById(seat.getSection().getSectionId())
                     .orElseThrow(SectionNotFoundException:: new);
 
@@ -50,6 +51,7 @@ public class GrpcServer extends SeatGrpc.SeatImplBase{
                             .build()
             );
             seats.add(seat);
+
             sections.add(section);
         });
         responseObserver.onCompleted();
