@@ -1,9 +1,9 @@
 package com.T82.ticket.service.impl;
 
+import com.T82.common_exception.exception.seat.EventNotFoundException;
 import com.T82.ticket.dto.response.RestSeatResponseDto;
 import com.T82.ticket.global.domain.entity.Place;
 import com.T82.ticket.global.domain.entity.Section;
-import com.T82.ticket.global.domain.exception.EventNotFoundException;
 import com.T82.ticket.global.domain.repository.PlaceRepository;
 import com.T82.ticket.global.domain.repository.SectionRepository;
 import org.junit.jupiter.api.BeforeEach;

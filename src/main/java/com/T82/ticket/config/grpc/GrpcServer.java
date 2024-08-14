@@ -7,12 +7,12 @@ import com.T82.ticket.global.domain.entity.Section;
 import com.T82.ticket.global.domain.repository.SeatRepository;
 import com.T82.ticket.global.domain.repository.SectionRepository;
 import io.grpc.stub.StreamObserver;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.autoconfigure.GrpcServerSecurityAutoConfiguration;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.t82.seat.lib.SeatDetailRequest;
 import org.t82.seat.lib.SeatDetailResponse;
 import org.t82.seat.lib.SeatGrpc;
@@ -30,6 +30,7 @@ public class GrpcServer extends SeatGrpc.SeatImplBase{
     private final SeatRepository seatRepository;
 
     @Override
+    @Transactional
     public void getSeatDetail(SeatDetailRequest request, StreamObserver<SeatDetailResponse> responseObserver) {
         List<Seat> seats = new ArrayList<>();
         List<Section> sections = new ArrayList<>();
@@ -38,22 +39,20 @@ public class GrpcServer extends SeatGrpc.SeatImplBase{
                     .orElseThrow(SeatNotFoundException::new);
             log.info("seatId" + seat.getSeatId());
 
-
             Section section = sectionRepository.findById(seat.getSection().getSectionId())
                     .orElseThrow(SectionNotFoundException:: new);
 
 
             SeatDetailResponse reply = SeatDetailResponse.newBuilder()
-                    .setId(seatId.longValue())
+                    .setId(seatId)
                     .setSection(section.getName())
-                    .setRowNum(seat.getRowNum().intValue())
-                    .setColNum(seat.getColNum().intValue())
+                    .setRowNum(seat.getRowNum())
+                    .setColNum(seat.getColNum())
                     .build();
             log.info("reply : {}", reply);
             responseObserver.onNext(reply);
 
             seats.add(seat);
-
             sections.add(section);
         });
         try {
@@ -65,7 +64,7 @@ public class GrpcServer extends SeatGrpc.SeatImplBase{
         complete(seats, sections);
     }
 
-    @Transactional
+
     public void complete(List<Seat> seats, List<Section> sections) {
         seats.forEach(Seat::SeatBook);
         sections.forEach(Section::DecreaseInSectionSeats);
