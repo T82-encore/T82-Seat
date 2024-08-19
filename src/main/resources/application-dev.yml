@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: ticket
+  datasource:
+    url: ${mysql_url}
+    username: ${mysql_username}
+    password: ${mysql_password}
+  kafka:
+    consumer:
+      group-id: ${kafka_group_id}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+      auto-offset-reset: earliest
+    bootstrap-servers: ${kafka_server}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${ddl_auto}
+  data:
+    redis:
+      host: ${redis_host}
+      port: ${redis_port}
+      timeout: ${redis_timeout}
+
+jwt:
+  secret: ${jwt_secret}
+  expiration: ${jwt_expiration}
