@@ -55,11 +55,6 @@ public class GrpcServer extends SeatGrpc.SeatImplBase{
             seats.add(seat);
             sections.add(section);
         });
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         responseObserver.onCompleted();
         complete(seats, sections);
     }
