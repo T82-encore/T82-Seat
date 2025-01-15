@@ -10,6 +10,7 @@ import com.T82.common_exception.exception.seat.SectionNotFoundException;
 import com.T82.ticket.config.util.LockSeat;
 import com.T82.ticket.dto.request.ChoiceSeatsRequest;
 import com.T82.ticket.dto.request.RefundSeatRequest;
+
 import com.T82.ticket.dto.request.SeatDetailRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
 import com.T82.ticket.dto.response.RestSeatResponseDto;
@@ -157,6 +158,7 @@ public class SeatServiceImpl implements SeatService , SectionService {
     @KafkaListener(topics = "refundSeat")
     @Transactional
     @CustomException(ErrorCode.FAILED_REFUND_TICKET)
+
     public void seatRefund (RefundSeatRequest refundSeatRequest){
         Seat seat = seatRepository.findById(refundSeatRequest.getSeatId())
                 .orElseThrow(SeatNotFoundException :: new);
@@ -164,7 +166,9 @@ public class SeatServiceImpl implements SeatService , SectionService {
         Seat.SeatRefund(seat);
         log.info("Seat refund processed for seatId: {}", refundSeatRequest.getSeatId());
         Section section =sectionRepository.findById(seat.getSection().getSectionId())
+
                 .orElseThrow(SectionNotFoundException:: new);
+
 
         Section.IncreaseInSectionSeats(section);
         log.info("Increased section seats for sectionId: {}", seat.getSection().getRestSeat());
