@@ -88,10 +88,7 @@ public class SeatServiceImpl implements SeatService , SectionService {
             if (seatReservationRepository.findById(choiceSeatsRequest.seatId()).isPresent()) {
                 throw new SeatAlreadyChosenException();
             }
-
-            synchronized (seat) {
                 seatReservationRepository.save(choiceSeatsRequest.toEntity(userId));
-            }
         });
     }
 
