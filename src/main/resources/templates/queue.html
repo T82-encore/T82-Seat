@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Queue</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/script.js}"></script>
+    <style>
+
+        @font-face {
+            font-family: 'CookieRun-Regular';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            text-align: center;
+            flex-direction: column;
+
+
+        }
+
+        /* 중간 컨테이너 스타일 */
+        .container-mid {
+            position: relative;
+            padding: 20px;
+            width: 400px;
+            text-align: left;
+            margin: 0 0 20px 0;
+            font-family: 'CookieRun-Regular',serif;
+        }
+
+        /* 하단 컨테이너 스타일 */
+        .container-bottom {
+            position: relative;
+            padding: 20px;
+            width: 400px;
+            text-align: center;
+            margin-bottom: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-icon {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #819FF7; /* 로딩 아이콘의 색상을 빨간색으로 설정 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header {
+            font-size: 50px;
+            margin: 0 0 20px 0;
+            padding: 0 10px;
+            border-radius: 10px;
+            font-family: 'CookieRun-Regular',serif;
+            color: rgb(230,95,73);
+        }
+
+        .paragraph {
+            margin: 10px 0;
+        }
+
+        .waiting-people{
+            font-size: 50px;
+            font-family: 'CookieRun-Regular',serif;
+            padding: 0 0 0 60px;
+        }
+        .my-turn{
+            font-size: 50px;
+            font-family: 'CookieRun-Regular',serif;
+            padding: 0 0 0 65px;
+        }
+
+        .number{
+            font-size: 50px;
+            font-family: 'CookieRun-Regular',serif;
+            padding: 0 0 0 60px;
+        }
+
+    </style>
+    <script>
+        function checkQueueStatus(eventId, token) {
+            fetch(`/api/v1/events/${eventId}/queue/status/user`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ENDED') {
+                        window.location.href = "hellot82://"; // 앱으로 돌아가기 위한 리다이렉션
+                    } else {
+                        setTimeout(() => checkQueueStatus(eventId, token), 60000);
+                    }
+                });
+        }
+
+        function updateQueueStatus(eventId, token) {
+            fetch(`/api/v1/events/${eventId}/queue/total/users`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('totalMembers').textContent = data.totalMembers;
+                });
+
+            fetch(`/api/v1/events/${eventId}/queue/position`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('userPosition').textContent = data.userPosition;
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const eventId = /*[[${eventId}]]*/ '[[${eventId}]]';
+            const userId = /*[[${token.id}]]*/ '[[${token.id}]]';
+            const token = /*[[${token}]]*/ '[[${token}]]';
+
+            updateQueueStatus(eventId, token);
+            setInterval(() => updateQueueStatus(eventId, token), 5000);
+            checkQueueStatus(eventId, userId); // 폴링 시작
+        });
+    </script>
+</head>
+<body class="full-height-center">
+<h1 class="header">T82  대기열</h1>
+<div class="container-mid">
+    <div class="waiting-people">
+    <p class="paragraph">대기 인원:<span class="number" id="totalMembers" th:text="${totalMembers}">1</span></p>
+    </div>
+    <div class="my-">
+        <p class="my-turn">나의 순번:<span class="number" id="userPosition" th:text="${userPosition}">1</span></p>
+    </div>
+    </div>
+<div class="container-bottom">
+    <div class="loading-icon"></div> <!-- 로딩 아이콘 -->
+</div>
+</body>
+</html>

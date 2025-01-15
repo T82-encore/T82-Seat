@@ -7,7 +7,6 @@ import com.T82.ticket.dto.request.ChoiceSeatsRequest;
 import com.T82.ticket.dto.request.SeatDetailRequest;
 import com.T82.ticket.dto.response.AvailableSeatsResponseDto;
 import com.T82.ticket.dto.response.SeatDetailResponse;
-import com.T82.ticket.global.domain.exception.MaxSeatsException;
 import com.T82.ticket.service.SeatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +35,6 @@ public class SeatController {
     }
     @PostMapping("/seats/detail")
     public List<SeatDetailResponse> getDetails(@RequestBody SeatDetailRequest seatIds){
-        log.info("박현서 너야?" + seatIds.getSeatIds());
         return seatService.seatDetailResponses(seatIds);
     }
 
