@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -47,32 +48,22 @@ public class SeatServiceImpl implements SeatService , SectionService {
         long start1 = System.currentTimeMillis();
         List<Seat> seats = sectionRepository.findAllSeatsByEventId(eventId);
 
-        if(seats.isEmpty()) throw new SectionNotFoundException();
+        if (seats.isEmpty()) throw new SectionNotFoundException();
         log.info("시간 : {}", System.currentTimeMillis() - start1);
 
-        // 조회할 seatId 목록을 추출
-        List<Long> seatIds = seats.stream()
-                .map(Seat::getSeatId)
-                .toList();
-
+        // 예약된 좌석 ID를 데이터베이스에서 직접 조회
         long start2 = System.currentTimeMillis();
-        // 해당 좌석 ID 중 이미 예약된 것들을 한 번에 조회
-        List<Long> pending = new ArrayList<>();
-        seatReservationRepository.findAllById(seatIds).forEach(seatReservation -> pending.add(seatReservation.getSeatId()));
+        HashSet<SeatReservation> reservedSeatIds = new HashSet<>(seatReservationRepository.findByEventId(eventId));
         log.info("시간 : {}", System.currentTimeMillis() - start2);
 
-        // 예약된 좌석 ID를 추출
-//        Set<Long> reservedSeatIds = reservedSeats.stream()
-//                .map(SeatReservation::getSeatId)
-//                .collect(Collectors.toSet());
-
-        long start = System.currentTimeMillis();
         // 예약되지 않은 좌석만 필터링
+        long start = System.currentTimeMillis();
         List<AvailableSeatsResponseDto> result = seats.stream()
-                .filter(seat -> !pending.contains(seat.getSeatId()))
+                .filter(seat -> !reservedSeatIds.contains(seat.getSeatId()))
                 .map(AvailableSeatsResponseDto::from)
                 .toList();
         log.info("시간 : {}", System.currentTimeMillis() - start);
+
         return result;
     }
 
