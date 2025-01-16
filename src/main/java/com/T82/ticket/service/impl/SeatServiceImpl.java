@@ -27,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +43,6 @@ public class SeatServiceImpl implements SeatService , SectionService {
     @Override
     @CustomException(ErrorCode.SECTION_NOT_FOUND)
     public List<AvailableSeatsResponseDto> getAvailableSeats(Long eventId) {
-
         long start1 = System.currentTimeMillis();
         List<Seat> seats = sectionRepository.findAllSeatsByEventId(eventId);
 
@@ -66,7 +64,6 @@ public class SeatServiceImpl implements SeatService , SectionService {
 
         return result;
     }
-
 
 
     @Transactional
